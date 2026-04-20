@@ -47,7 +47,7 @@ and never performs side effects.
 flowchart LR
   UI[Web UI / SPA] -->|REST + WebSocket| API[Core API]
   CLI[stackmaster CLI] -->|REST| API
-  IDP[OIDC IdP<br/>Keycloak/Authentik/…] -.->|OIDC| API
+  IDP[External OIDC IdP<br/>planned for v0.9] -.->|OIDC: v0.9+| API
 
   API --> DB[(PostgreSQL<br/>desired + observed state,<br/>audit, vault)]
   API --> CACHE[(Redis<br/>cache, queues, pub/sub)]
@@ -348,10 +348,13 @@ they must see the same world.
 | 0003     | Frontend framework                 | **Accepted — React + Vite**                                              |
 | 0004     | License                            | **Accepted — AGPL-3.0-or-later**                                         |
 | 0005     | Credential vault backend           | **Accepted — internal PostgreSQL (default)**                             |
-| 0006     | Auth stack                         | **Accepted — native OIDC (go-oidc), Authentik primary, env-var bootstrap** |
+| 0006     | Auth stack                         | **Accepted — local accounts + env-var bootstrap in v0.1; native OIDC (go-oidc, Authentik primary) deferred to v0.9** |
 | 0007     | Node-editor library                | **Accepted — React Flow**                                                |
 | 0008     | Workflow engine model              | **Accepted — custom DAG on PostgreSQL**                                  |
 
 With all ADRs accepted, the implementation path for iteration 2 is
 clear: Go core + asynq + PostgreSQL + Redis + React/Vite + React
-Flow, with Authentik as the first OIDC conformance target.
+Flow, authenticating via local accounts with an env-var bootstrap
+admin. OIDC / external IdP integration is scheduled for v0.9 (see
+[ROADMAP.md](ROADMAP.md)); Authentik will be the first conformance
+target when that work starts.

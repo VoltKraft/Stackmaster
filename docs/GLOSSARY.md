@@ -142,8 +142,10 @@ re-wraps data keys without re-encrypting every credential. See
 [CREDENTIALS.md](CREDENTIALS.md).
 
 ### OIDC Relying Party
-Stackmaster's authentication role. Stackmaster **consumes** OIDC
-tokens; it is never an **issuer**. See [AUTH.md](AUTH.md).
+Stackmaster's planned authentication role for v0.9. Stackmaster will
+**consume** OIDC tokens from an external IdP; it is never an
+**issuer**. Through v0.8, authentication uses local accounts only.
+See [AUTH.md](AUTH.md) and [ROADMAP.md](ROADMAP.md).
 
 ## Terms we deliberately avoid
 

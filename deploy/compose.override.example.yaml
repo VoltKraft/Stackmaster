@@ -1,9 +1,10 @@
-# deploy/docker-compose.override.example.yml
+# deploy/compose.override.example.yaml
 #
 # Purpose
-#   Template for local overrides. Copy to
-#   `docker-compose.override.yml` and adjust for your host. The real
-#   override file is gitignored.
+#   Template for local overrides. Copy to `compose.override.yaml`
+#   and adjust for your host. The real override file is gitignored.
+#   Docker Compose v2 auto-merges `compose.override.yaml` on top of
+#   `compose.yaml` without requiring `-f`.
 #
 # Status
 #   Skeleton only. Every section is commented out.

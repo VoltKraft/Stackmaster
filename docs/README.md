@@ -16,7 +16,7 @@ in English.
 - [PROVIDERS.md](PROVIDERS.md) — provider interface.
 - [STATE_MACHINE.md](STATE_MACHINE.md) — game-server states.
 - [API.md](API.md) — REST + WebSocket surface.
-- [AUTH.md](AUTH.md) — OIDC, local accounts, sessions, MFA outlook.
+- [AUTH.md](AUTH.md) — local accounts now, OIDC from v0.9, sessions, MFA outlook.
 - [RBAC.md](RBAC.md) — role matrix.
 - [CREDENTIALS.md](CREDENTIALS.md) — vault schema and encryption.
 - [WORKFLOWS.md](WORKFLOWS.md) — workflow engine.

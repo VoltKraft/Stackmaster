@@ -24,10 +24,12 @@ Stackmaster UI.
   - Field-level encryption in PostgreSQL with a master key from env var.
   - Only two credential types: Proxmox API token, SSH key.
   - No rotation UI yet (rotation is a manual SQL + re-apply step).
-- Minimal OIDC:
-  - Generic OIDC flow tested against Keycloak only.
-  - Group claim → Administrator/Operator mapping.
-  - Local account fallback for bootstrap.
+- **Local accounts only.**
+  - Env-var bootstrap admin with forced password change on first login.
+  - Administrator-managed local user accounts.
+  - Personal Access Tokens for the CLI and automation.
+  - External IdP (OIDC) integration is **explicitly deferred** —
+    see v0.9.
 - RBAC with the two roles, enforced at the API layer.
 - Append-only audit log.
 - CLI `stackmaster apply -f` and `stackmaster server {start,stop,status}`.
@@ -44,7 +46,8 @@ Stackmaster UI.
 
 **Exit criteria for v0.1**
 
-1. A fresh operator runs `docker compose up -d`, logs in via Keycloak,
+1. A fresh operator runs `docker compose up -d`, logs in with the
+   bootstrap admin account (and changes the password on first login),
    applies an infrastructure YAML, clicks "start" on the Valheim tile,
    and ends up with a reachable Valheim server on a Proxmox VM that
    was powered off beforehand.
@@ -68,7 +71,6 @@ Stackmaster UI.
 - Node editor with edit-mode for workflows, round-tripping to YAML.
 - Built-in workflow templates (`start-with-platform-boot`,
   `scheduled-shutdown`, `auto-update-window`) shippable as clones.
-- OIDC validated against Authentik and Authelia in CI.
 
 ## v0.4 — "Windows and the enterprise edges"
 
@@ -77,6 +79,44 @@ Stackmaster UI.
 - Additional vault backends: SOPS, cloud KMS (AWS/GCP/Azure).
 - MFA (TOTP) for local accounts, WebAuthn outlook.
 - Fine-grained RBAC behind a feature flag.
+
+## v0.9 — "External IdP integration (OIDC)"
+
+OIDC is deliberately the **last** major capability before v1.0.
+Local-account auth has carried the project through every earlier
+iteration, so OIDC lands on a system whose auth surface, RBAC,
+sessions, and audit trail are already mature and well-tested.
+
+**Scope**
+
+- Native OIDC relying party implemented in the core per
+  [ADR-0006](adr/0006-auth-and-oidc.md) (`github.com/coreos/go-oidc`
+  + `golang.org/x/oauth2`).
+- Authorization Code flow with PKCE, state + nonce verification.
+- Group-claim → Administrator/Operator mapping, configurable per
+  deployment.
+- Refresh-token storage encrypted in the vault.
+- Local accounts remain as the permanent fallback — a broken IdP
+  never locks the operator out of their own system.
+- Conformance matrix in CI: **Authentik** (primary target),
+  Keycloak, Authelia, generic mock.
+- Documentation of the IdP-side setup as **external** configuration;
+  Stackmaster never bundles, installs, or operates an IdP.
+
+**Out of scope for v0.9**
+
+- SCIM user provisioning.
+- SAML.
+- IdP-initiated login.
+
+**Exit criteria for v0.9**
+
+1. A deployment with `SM_OIDC_*` configured against an external
+   Authentik instance authenticates users end-to-end, maps groups
+   to roles, and logs them out cleanly.
+2. A deployment with `SM_OIDC_*` **not** configured still works
+   using local accounts only — no regression for the v0.1–v0.8 path.
+3. Conformance tests pass for Authentik, Keycloak, and Authelia.
 
 ## v1.0 — "Production-ready single-node"
 

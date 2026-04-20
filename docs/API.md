@@ -2,8 +2,7 @@
 
 Stackmaster exposes one unified API on two transports:
 
-- **REST/JSON over HTTPS** for CRUD and commands.
-- **WebSocket over HTTPS** for log streams, console passthrough, and
+- **REST/JSON over HTTPS** for CRUD and commands, log streams, console passthrough, and
   live reconciler events.
 
 The UI and the CLI speak the same API. A third-party TUI, mobile app,
@@ -11,7 +10,7 @@ or integration layer can be built against it without special-casing.
 
 ## Source of truth
 
-An OpenAPI 3.1 document will live at [`../api/openapi.yaml`](../api/)
+An OpenAPI document will live at [`../api/openapi.yaml`](../api/)
 (path reserved; file created in iteration 2). That document is
 authoritative. This Markdown file describes the shape informally.
 
@@ -29,12 +28,15 @@ authoritative. This Markdown file describes the shape informally.
 
 ## Authentication
 
-- Session cookie (`__Host-sm_session`) — httpOnly, Secure, SameSite=Lax
-  for OIDC flows, SameSite=Strict after login.
+- Session cookie (`__Host-sm_session`) — httpOnly, Secure,
+  SameSite=Strict after login.
 - Machine clients use a **Personal Access Token** (bearer). Tokens are
   scoped and revocable. Tokens are hashed at rest (Argon2id).
-- OIDC access tokens are **never persisted**. Refresh tokens are
-  stored encrypted in the vault, never in plain tables.
+- Local accounts are the only auth path through v0.8. External IdP
+  (OIDC) integration is planned for v0.9 (see [AUTH.md](AUTH.md)
+  and [ROADMAP.md](ROADMAP.md)); when it ships, OIDC access tokens
+  are **never persisted**, and refresh tokens are stored encrypted
+  in the vault.
 
 See [AUTH.md](AUTH.md).
 
@@ -103,7 +105,7 @@ Event envelope (illustrative):
   "seq": 12874,
   "ts": "2026-04-20T10:12:33.421Z",
   "kind": "gameserver.state_changed",
-  "actor": { "type": "user", "id": "018f...", "auth": "oidc:keycloak" },
+  "actor": { "type": "user", "id": "018f...", "auth": "local" },
   "resource": { "type": "gameserver", "id": "018f...", "name": "valheim-saturday" },
   "payload": {
     "from": "HealthChecking",

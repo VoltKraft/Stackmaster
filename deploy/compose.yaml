@@ -1,4 +1,4 @@
-# Stackmaster — docker-compose skeleton
+# Stackmaster — Compose Spec skeleton (compose.yaml)
 #
 # Status
 #   Scaffolding only. Every service below is commented out. No image
@@ -6,12 +6,17 @@
 #   intended service topology; iteration 2 will turn it into a working
 #   deployment.
 #
+# File name
+#   Uses the modern Compose Spec file name (`compose.yaml`), which
+#   Docker Compose v2 discovers automatically without `-f`. The legacy
+#   `docker-compose.yml` name is deliberately not used.
+#
 # When to touch this file
 #   After ADR-0001 (language) and ADR-0005 (credential vault) land.
 #
 # See docs/ARCHITECTURE.md §8 for the deployment model.
 
-# version:  intentionally omitted; modern compose does not require it.
+# `version:` is intentionally omitted; the Compose Spec does not use it.
 
 # services:
 
@@ -28,9 +33,9 @@
 #     #   SM_REDIS_URL: redis://redis:6379/0
 #     #   SM_MASTER_KEY_SOURCE: env
 #     #   SM_MASTER_KEY: "${SM_MASTER_KEY}"   # see .env.example
-#     #   SM_OIDC_ISSUER: "${SM_OIDC_ISSUER}"
-#     #   SM_OIDC_CLIENT_ID: "${SM_OIDC_CLIENT_ID}"
-#     #   SM_OIDC_CLIENT_SECRET: "${SM_OIDC_CLIENT_SECRET}"
+#     #   SM_BOOTSTRAP_ADMIN_EMAIL: "${SM_BOOTSTRAP_ADMIN_EMAIL}"
+#     #   SM_BOOTSTRAP_ADMIN_PASSWORD: "${SM_BOOTSTRAP_ADMIN_PASSWORD}"
+#     #   # OIDC vars (SM_OIDC_*) land in v0.9 — see docs/ROADMAP.md.
 #     # depends_on:
 #     #   - postgres
 #     #   - redis

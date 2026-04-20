@@ -28,7 +28,7 @@ responsible disclosure, see [SECURITY.md](../SECURITY.md).
 
 | Category                 | Examples in Stackmaster context                                    | Primary mitigation                                 |
 |--------------------------|--------------------------------------------------------------------|----------------------------------------------------|
-| **S**poofing             | Forged OIDC token, stolen session cookie                           | Strict issuer/audience checks, short-lived session |
+| **S**poofing             | Stolen session cookie, replayed PAT (and forged OIDC token from v0.9) | Short-lived sessions, PAT hashing + revocation, strict issuer/audience checks once OIDC ships |
 | **T**ampering            | Mutation of audit log, poisoned manifest apply                     | Append-only log with monotonic IDs; apply diffs    |
 | **R**epudiation          | Admin denies deleting a server                                     | Every state change audited with actor + auth path  |
 | **I**nformation disclosure | Credential in logs, credential in UI                             | Never render plaintext; log redaction at source    |
@@ -59,9 +59,9 @@ responsible disclosure, see [SECURITY.md](../SECURITY.md).
 ### Session management
 
 - Session cookies: `__Host-` prefix, httpOnly, Secure, SameSite=Strict
-  after login.
-- Login uses SameSite=Lax temporarily for the OIDC redirect; upgraded
-  to Strict after the callback.
+  after login. Local login uses Strict from the first request; OIDC
+  (from v0.9) uses SameSite=Lax temporarily for the redirect and
+  upgrades to Strict after the callback.
 - Idle timeout (default 12h) and absolute timeout (default 30d),
   both configurable.
 - Session rotation on privilege change.

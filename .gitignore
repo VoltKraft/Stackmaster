@@ -28,6 +28,8 @@ Thumbs.db
 !.env.example
 deploy/.env
 !deploy/.env.example
+deploy/compose.override.yaml
+!deploy/compose.override.example.yaml
 
 # --- Build / runtime artifacts (placeholders; see ADR-0001) -------------
 bin/

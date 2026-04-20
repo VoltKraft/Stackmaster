@@ -9,12 +9,16 @@ stack end-to-end.
 The target at the end of Iteration 2 is the **v0.1 demo scenario**
 defined in [ROADMAP.md](ROADMAP.md): a single Valheim server on
 LinuxGSM on Docker on Proxmox, brought up via `stackmaster apply -f`,
-visible live in the UI to all logged-in operators, behind OIDC login
-against an external IdP.
+visible live in the UI to all logged-in operators, behind **local
+account** login with an env-var bootstrap admin.
+
+OIDC is **deliberately out of scope** for Iteration 2. It is the
+last major capability before v1.0 (see ROADMAP v0.9) and lands on a
+mature auth surface rather than blocking the v0.1 demo.
 
 Iteration 2 does **not** yet deliver the generic workflow engine, the
-node editor, delegated vault backends, or most providers. Those are
-explicitly deferred to Iteration 3+ (see *Outlook* at the bottom).
+node editor, delegated vault backends, most providers, or OIDC.
+Those are explicitly deferred (see *Outlook* at the bottom).
 
 ## Guiding principles
 
@@ -54,7 +58,7 @@ milestone is not "done" until its exit criteria are demonstrable.
 
 - `make test` is green on a clean checkout.
 - CI is green on `main`.
-- `docker compose -f deploy/docker-compose.yml up -d postgres redis` is
+- `docker compose -f deploy/compose.yaml up -d postgres redis` is
   sufficient to run the test suite locally.
 
 **Proposed Go package layout (`core/`)**
@@ -64,7 +68,7 @@ core/
   cmd/stackmaster/           # binary entrypoint
   internal/
     api/                     # chi router, handlers, middleware
-    auth/                    # OIDC, sessions, PATs, password hashing
+    auth/                    # local accounts, sessions, PATs, password hashing
     rbac/                    # role check, policy matrix
     vault/                   # credential store (envelope encryption)
     events/                  # outbox + Redis pub/sub + WS hub
@@ -132,31 +136,39 @@ reversible migrations.
 - Credential rotation test: rotating a credential creates a new
   version; old references still resolve until revoked.
 
-### M2.4 — Auth, sessions, RBAC
+### M2.4 — Local auth, sessions, RBAC
 
-**Goal.** A user can log in via OIDC (against an external Authentik
-test instance), and role checks gate every mutating endpoint.
+**Goal.** A user can log in with a local account, create more users,
+issue PATs for the CLI, and every mutating endpoint is gated by a
+role check. OIDC is **not** part of this milestone — it is scheduled
+for v0.9 (see [ROADMAP.md](ROADMAP.md)).
 
 **Deliverables**
 
-- OIDC Authorization Code + PKCE flow (`go-oidc`).
-- Local fallback: Argon2id password hashing, rate-limited login.
+- Local login: Argon2id password hashing, rate-limited login with
+  exponential backoff per IP + per account.
 - **Env-var bootstrap admin** per
-  [ADR-0006](adr/0006-auth-and-oidc.md), forced password change on
-  first login.
+  [ADR-0006](adr/0006-auth-and-oidc.md): on first start, if no admin
+  exists, one is created from `SM_BOOTSTRAP_ADMIN_EMAIL` +
+  `SM_BOOTSTRAP_ADMIN_PASSWORD` and a password change is forced on
+  first login. The env vars are read once and then ignored.
+- Admin-driven user management: create, disable, delete users; reset
+  passwords.
 - Sessions: `__Host-sm_session` cookie, Redis-backed, idle + absolute
   timeouts, rotation on privilege change.
 - PAT issuance (shown once, stored hashed).
 - RBAC middleware using the matrix in [RBAC.md](RBAC.md).
-- Group-claim → role mapping (YAML config).
 
 **Exit criteria**
 
-- End-to-end test against a disposable Authentik container in CI
-  (testcontainers-go).
-- Local fallback test: bootstrap admin logs in, is forced to change
-  password, can create another user.
-- RBAC test: Operator cannot hit admin-only endpoints.
+- Bootstrap admin test: fresh start with env vars creates the admin;
+  second start with the same env vars is a no-op.
+- Forced-change test: first login prompts for a new password and
+  rejects the original one.
+- User management test: admin creates an Operator, the Operator logs
+  in, can hit Operator endpoints, cannot hit admin-only endpoints.
+- PAT test: issue PAT, authenticate a CLI call with it, revoke it,
+  confirm the next call fails.
 
 ### M2.5 — Real-time events & outbox
 
@@ -191,8 +203,8 @@ logged-in users, per [ARCHITECTURE.md §10](ARCHITECTURE.md).
 
 **Deliverables**
 
-- Routes: `/login`, `/dashboard`, `/stacks`, `/stacks/:id`,
-  `/credentials`, `/settings`.
+- Routes: `/login` (local credentials), `/dashboard`, `/stacks`,
+  `/stacks/:id`, `/credentials`, `/users`, `/settings`.
 - TanStack Query for REST; a thin `useLiveEvents()` hook that
   subscribes to `/ws/events` and invalidates queries on relevant
   event kinds.
@@ -204,7 +216,7 @@ logged-in users, per [ARCHITECTURE.md §10](ARCHITECTURE.md).
 
 **Exit criteria**
 
-- Login against the Authentik test instance works from the browser.
+- Local login works from the browser against a fresh bootstrap admin.
 - The game-server list updates live when `stackmaster apply -f` is
   run from the CLI.
 
@@ -244,13 +256,16 @@ Pin in Iteration 2 and don't churn. Upgrades are their own PRs.
 | `github.com/pressly/goose/v3`  | Migrations (embedded)                   |
 | `github.com/hibiken/asynq`     | Reconciler task queue                   |
 | `github.com/redis/go-redis/v9` | Redis client (sessions, pub/sub, stream)|
-| `github.com/coreos/go-oidc/v3` | OIDC relying party                      |
 | `github.com/coder/websocket`   | WebSocket hub                           |
 | `golang.org/x/crypto/argon2`   | Password hashing                        |
 | `log/slog`                     | Structured logging (stdlib)             |
 | `github.com/caarlos0/env/v11`  | Env-var config                          |
 | `github.com/stretchr/testify`  | Test assertions                         |
-| `testcontainers-go`            | Integration tests (Postgres, Redis, IdP)|
+| `testcontainers-go`            | Integration tests (Postgres, Redis)     |
+
+OIDC libraries (`github.com/coreos/go-oidc`, `golang.org/x/oauth2`)
+are **not** pinned in Iteration 2 and do not enter the dependency
+graph. They will be added in the Iteration that delivers v0.9.
 
 **Frontend (`ui/`)**
 
@@ -272,7 +287,7 @@ Pin in Iteration 2 and don't churn. Upgrades are their own PRs.
 | Credential leakage via logs                                | Structured logging with explicit redaction; lint rule bans `fmt.Sprintf` on credential types.  |
 | Provider flakiness against Proxmox test host               | Provider conformance suite runs against noop first; Proxmox is a separate nightly job.         |
 | Scope creep into workflow engine                           | v0.1 ships only a **hard-coded** wake-on-demand workflow; generic engine is Iteration 3.       |
-| Authentik drift breaks OIDC tests                          | Pin Authentik image by digest in the testcontainers setup; upgrade in its own PR.              |
+| Skipping OIDC now makes the v0.9 integration painful       | Keep the auth seam abstract (`AuthProvider` interface) so OIDC slots in alongside local auth.  |
 | sqlc + pgx type mismatch on custom types                   | Keep custom types minimal; document every `CREATE TYPE` in `docs/SCHEMA.md`.                   |
 | Outbox dispatcher falls behind                             | Depth gauge + alert; backpressure via bounded channel; dispatcher is horizontally scalable.    |
 
@@ -292,6 +307,9 @@ Iteration 2 intentionally defers:
   [ADR-0005](adr/0005-credential-vault.md) are a v0.4+ concern.
 - **Backups, scheduled maintenance windows, console streaming,
   file browser** — all v0.2–v0.4 per [ROADMAP.md](ROADMAP.md).
+- **OIDC / external IdP integration** — the last major capability
+  before v1.0, scheduled for **v0.9**. Until then, Stackmaster
+  authenticates users via local accounts only.
 
 ## Tracking
 

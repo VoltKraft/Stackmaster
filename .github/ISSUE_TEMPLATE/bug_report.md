@@ -16,7 +16,8 @@ A clear, one-paragraph description of what's wrong.
 - Deployment mode: (docker compose / Helm / dev)
 - OS + version of the host:
 - Relevant providers in use: (proxmox / docker / k8s / linuxgsm / …)
-- OIDC provider (if used): (keycloak / authentik / authelia / …)
+- Auth mode: (local / PAT / OIDC — OIDC is planned for v0.9)
+- OIDC provider (only if on v0.9+): (authentik / keycloak / authelia / …)
 
 ## Steps to reproduce
 

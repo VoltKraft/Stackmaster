@@ -104,6 +104,13 @@ env-provided admin for CI scenarios.
   on the conformance matrix. **Stackmaster does not bundle, ship,
   or install an IdP** — it is a relying party against an IdP the
   operator already runs.
+- **Sequencing.** The **local-account** parts of this decision
+  (env-var bootstrap, Argon2id, PATs, session store, RBAC
+  enforcement) ship in Iteration 2 / v0.1 and carry the project
+  through v0.8. The **OIDC** parts ship in **v0.9** — deliberately
+  the last major capability before v1.0. See
+  [ROADMAP.md](../ROADMAP.md). Local accounts remain as a permanent
+  fallback after v0.9 so a broken IdP never locks operators out.
 
 ## Consequences
 
@@ -112,18 +119,25 @@ env-provided admin for CI scenarios.
     lifecycle and PAT scoping.
   - Env-var bootstrap keeps the `docker compose up -d` story simple.
 - **Negative:**
-  - We own the OIDC correctness bar. CI must include conformance
-    tests against Authentik, Keycloak, Authelia, and a generic mock.
+  - We own the OIDC correctness bar. When OIDC ships in v0.9, CI
+    must include conformance tests against Authentik, Keycloak,
+    Authelia, and a generic mock.
   - Env-var bootstrap means the plaintext bootstrap password is
     readable via `/proc/<pid>/environ` on the host. Mitigation:
     forced change on first login; env vars cleared from the process
     env after first read where the OS allows.
+  - Deferring OIDC to v0.9 means early adopters can only use local
+    accounts. Accepted trade-off: the v0.1 demo path does not need
+    SSO, and a mature local-auth surface is a better foundation to
+    add OIDC onto than the other way round.
 - **Follow-ups:**
-  - Pin go-oidc and oauth2 versions.
-  - Document the Authentik setup (provider + application +
-    OAuth2/OpenID Provider config) in [AUTH.md](../AUTH.md) — as
-    **external** configuration, not shipped with Stackmaster.
-  - Extend the conformance suite for Keycloak and Authelia in v0.2.
+  - **Iteration 2 / v0.1:** implement local accounts, env-var
+    bootstrap, sessions, PATs, RBAC enforcement.
+  - **v0.9:** pin `go-oidc` and `oauth2` versions, implement the
+    relying-party flow, build the conformance suite
+    (Authentik / Keycloak / Authelia / mock), document the
+    Authentik setup in [AUTH.md](../AUTH.md) as **external**
+    configuration not shipped with Stackmaster.
 
 ## References
 

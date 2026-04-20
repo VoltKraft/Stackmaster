@@ -86,11 +86,16 @@ These capabilities are **hidden behind a feature flag** in v1.0 to
 avoid shipping a half-designed UI. See the
 [Roadmap](ROADMAP.md) for when they become user-facing.
 
-## IdP group mapping
+## Role assignment
 
-See [AUTH.md](AUTH.md) for the OIDC claim-to-role mapping config. The
-mapping is evaluated on every login — a user's group membership in
-the IdP is authoritative.
+Through v0.8, Stackmaster uses local accounts only. An Administrator
+assigns each user to Administrator or Operator directly.
+
+From **v0.9** onward (when OIDC integration ships — see
+[ROADMAP.md](ROADMAP.md)), group claims from the IdP become the
+authoritative source of role membership for SSO-authenticated users.
+See [AUTH.md](AUTH.md) for the claim-to-role mapping config. Local
+accounts keep their explicit role assignment as a permanent fallback.
 
 ## TODO
 

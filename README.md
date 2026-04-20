@@ -48,8 +48,9 @@ Two ideas carried consistently across the project:
   workflow DAGs. The graph and its YAML are isomorphic.
 - Built-in encrypted credential vault with field-level encryption, key
   rotation, and optional delegation to Vault / SOPS / cloud KMS.
-- OIDC-first authentication (tested with Keycloak, Authentik, Authelia),
-  local account fallback, group-to-role claim mapping.
+- Local accounts with env-var bootstrap admin from v0.1; OIDC
+  authentication with group-to-role claim mapping added in v0.9
+  (deliberately the last major capability before v1.0).
 - RBAC with two clearly separated roles in v1.0 — Administrator and
   Operator — prepared for fine-grained permissions later.
 - Append-only audit log for every security-relevant event.
@@ -64,13 +65,6 @@ Two ideas carried consistently across the project:
 See [docs/VISION.md](docs/VISION.md) for the long form and
 [docs/ROADMAP.md](docs/ROADMAP.md) for the staged path to v1.0.
 
-## Explicit non-goals
-
-- Matchmaking (use [Open Match](https://openmatch.dev)).
-- Large-scale esports autoscaling (use [Agones](https://agones.dev)).
-- Billing or reseller systems.
-- Being an OIDC provider (Stackmaster is a client, never an issuer).
-- Replacing a monitoring stack (Prometheus/Grafana stay external).
 
 ## Architecture at a glance
 
@@ -96,16 +90,6 @@ See [docs/VISION.md](docs/VISION.md) for the long form and
 
 Full details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## CLI
-
-The binary is `stackmaster`. Typical invocations:
-
-```
-stackmaster apply -f infrastructure.yaml
-stackmaster server start valheim
-stackmaster workflow run wake-on-demand
-```
-
 ## Project status
 
 | Area                | Status                                 |
@@ -115,7 +99,8 @@ stackmaster workflow run wake-on-demand
 | Providers           | Not yet implemented                    |
 | UI / Node editor    | Not yet implemented                    |
 | Credential vault    | Specified, pending ADR-0005            |
-| OIDC / RBAC         | Specified                              |
+| Local auth / RBAC   | Specified (ships in v0.1)              |
+| OIDC integration    | Specified, scheduled for v0.9          |
 
 ## Contributing
 
@@ -133,7 +118,7 @@ and [SECURITY.md](SECURITY.md). Provider proposals have their own
 - [STATE_MACHINE.md](docs/STATE_MACHINE.md) — game-server states.
 - [PROVIDERS.md](docs/PROVIDERS.md) — provider interface.
 - [API.md](docs/API.md) — REST + WebSocket sketch.
-- [AUTH.md](docs/AUTH.md) — OIDC, sessions, MFA outlook.
+- [AUTH.md](docs/AUTH.md) — local accounts now, OIDC in v0.9, sessions, MFA outlook.
 - [RBAC.md](docs/RBAC.md) — role matrix.
 - [CREDENTIALS.md](docs/CREDENTIALS.md) — vault schema & encryption.
 - [WORKFLOWS.md](docs/WORKFLOWS.md) — workflow engine.

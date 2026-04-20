@@ -28,7 +28,7 @@ decision per file. New ADRs copy [template.md](template.md).
 | ID    | Title                                                | Status    | Decision                                                                |
 |-------|------------------------------------------------------|-----------|-------------------------------------------------------------------------|
 | 0005  | [Credential vault backend](0005-credential-vault.md) | Accepted  | Internal PostgreSQL vault (default)                                     |
-| 0006  | [Auth stack and OIDC](0006-auth-and-oidc.md)         | Accepted  | Native OIDC (go-oidc) · primary target: Authentik · env-var bootstrap   |
+| 0006  | [Auth stack and OIDC](0006-auth-and-oidc.md)         | Accepted  | Local accounts + env-var bootstrap ship in v0.1 · native OIDC deferred to v0.9 |
 | 0007  | [Node-editor library](0007-node-editor-library.md)   | Accepted  | React Flow (open-core, MIT)                                             |
 | 0008  | [Workflow engine](0008-workflow-engine.md)           | Accepted  | Custom DAG on PostgreSQL                                                |
 

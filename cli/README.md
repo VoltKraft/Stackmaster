@@ -18,7 +18,8 @@ stackmaster workflow run wake-on-demand
 stackmaster workflow list
 stackmaster credential set proxmox-main --type api_token --stdin
 stackmaster audit tail --server valheim
-stackmaster login   # starts the OIDC device-code flow
+stackmaster login   # local login or PAT through v0.8;
+                    # OIDC device-code flow added in v0.9.
 ```
 
 See [../docs/API.md](../docs/API.md) and

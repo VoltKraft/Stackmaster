@@ -95,7 +95,6 @@ bespoke script for this specific game.
 
 - Matchmaking — use [Open Match](https://openmatch.dev).
 - Massive per-match autoscaling for esports — use [Agones](https://agones.dev).
-- Being someone's OIDC provider — Stackmaster is a relying party only.
 - Billing, invoicing, or reseller hierarchies — out of scope.
 
 ## Relationship to existing projects

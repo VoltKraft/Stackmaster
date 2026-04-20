@@ -54,9 +54,11 @@ published.
 - Run behind a reverse proxy that enforces TLS and HSTS.
 - Keep the master key outside the container filesystem (env var
   injected by a KMS-backed secret, not a file baked into an image).
-- Use an OIDC IdP with MFA; do not rely on the local-account fallback
-  for day-to-day admin.
+- Pick a strong bootstrap admin password and change it on first
+  login (the UI forces this); rotate it on any personnel change.
 - Restrict network access to the PostgreSQL and Redis instances to
   the control plane only.
 - Rotate credentials after any reinstall, upgrade, or personnel
   change.
+- From v0.9: front Stackmaster with an OIDC IdP that enforces MFA;
+  keep a local admin account as the documented break-glass path.

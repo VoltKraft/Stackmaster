@@ -16,7 +16,7 @@ question: **"Why not just fork Pterodactyl?"**
 | Manages platforms (Docker/K8s/LXC)  | Docker only | Docker only | K8s only  | Host only  | ✅ Docker / Swarm / K8s / LXC / systemd / Windows |
 | Graphical workflow designer         | ❌          | ❌       | ❌            | Limited    | ✅ (typed DAG with YAML round-trip) |
 | Credential vault (field-level)      | ❌          | ❌       | Kubernetes-native | ❌     | ✅                                |
-| OIDC SSO                            | Plugin      | Plugin  | External      | Limited    | ✅ First-class                    |
+| OIDC SSO                            | Plugin      | Plugin  | External      | Limited    | Planned v0.9 (first-class)        |
 | RBAC                                | Per server  | Per server | K8s RBAC    | Roles      | ✅ Admin/Operator, expandable     |
 | Everything-as-code (YAML apply)     | ❌          | ❌       | ✅ (K8s manifests) | ❌     | ✅                                |
 | Self-hosted by default              | ✅          | ✅       | ✅            | ✅          | ✅                                |
