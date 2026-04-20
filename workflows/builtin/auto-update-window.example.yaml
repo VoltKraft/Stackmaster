@@ -1,0 +1,55 @@
+# Built-in workflow template: auto-update-window
+#
+# Purpose
+#   Run game updates only inside a defined maintenance window. If the
+#   server is running outside the window, queue the update and apply
+#   it on the next window.
+#
+# Status
+#   Template. Clone and edit. See docs/WORKFLOWS.md.
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Workflow
+metadata:
+  name: auto-update-window
+  description: |
+    Check for a pending update; if inside the maintenance window,
+    stop the server, run the update, restart, probe, and notify.
+    Otherwise, defer.
+  tags: [builtin, template]
+
+spec:
+  version: 1
+
+  inputs:
+    server:
+      type: ref
+      kind: gameserver
+    window_cron:
+      type: string
+      default: "0 4 * * *"
+    window_duration:
+      type: duration
+      default: "2h"
+
+  triggers:
+    - id: window-check
+      type: Cron
+      schedule: "${{ window_cron }}"
+
+  retry:
+    default:
+      max_attempts: 2
+      backoff: exponential
+
+  nodes:
+    # TODO: Condition: update available for server?
+    # TODO: Condition: current time inside window?
+    # TODO: Action.SetDesiredState(state=Stopped)
+    # TODO: Action.Game.install (update)
+    # TODO: Action.SetDesiredState(state=Running)
+    # TODO: Delay.waitFor(healthcheck)
+    # TODO: Notification
+
+  edges:
+    # TODO: wire nodes

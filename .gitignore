@@ -1,0 +1,73 @@
+# Stackmaster .gitignore
+#
+# Kept minimal during the scaffolding phase. Language- and
+# framework-specific entries will be added once ADR-0001 and ADR-0003
+# land.
+
+# --- OS / editor --------------------------------------------------------
+.DS_Store
+Thumbs.db
+*~
+.*.swp
+.*.swo
+.idea/
+.vscode/
+*.iml
+
+# --- Secrets / local environment ---------------------------------------
+# Anything ending in .secret, .key, .pem, .env (except the example
+# file) must never be committed.
+*.secret
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+.env
+.env.*
+!.env.example
+deploy/.env
+!deploy/.env.example
+
+# --- Build / runtime artifacts (placeholders; see ADR-0001) -------------
+bin/
+build/
+dist/
+out/
+target/
+coverage/
+*.log
+
+# --- Node / JS (placeholder for the UI) ---------------------------------
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# --- Python (placeholder if ADR-0001 lands on Python) -------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Go (placeholder if ADR-0001 lands on Go) ---------------------------
+# go.work
+# vendor/
+
+# --- Database dumps / local data ----------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+data/
+pgdata/
+redisdata/
+
+# --- Misc ---------------------------------------------------------------
+tmp/

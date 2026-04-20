@@ -1,0 +1,47 @@
+# Example infrastructure manifest
+#
+#   A Counter-Strike dedicated server installed via SteamCMD, running
+#   as a Kubernetes Deployment inside a shared cluster. The
+#   hypervisor is `noop` because the cluster's nodes are managed
+#   outside Stackmaster.
+#
+# Status
+#   Draft. Schema may change before v0.1.
+#
+# Apply with:
+#   stackmaster apply -f examples/manifests/csgo-steamcmd-k8s.yaml
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Stack
+metadata:
+  name: cs-scrim-01
+  description: Scrim server for the Counter-Strike team.
+
+spec:
+  hypervisor:
+    provider: noop
+    host:
+      name: k8s-cluster-a
+
+  platform:
+    provider: kubernetes
+    kubeconfig: ref://creds/k8s-cluster-a
+    namespace: gameservers
+
+  game:
+    provider: steamcmd
+    app_id: 730          # CS2 / CS:GO appid (illustrative)
+    start_command: "./srcds_run -game csgo +game_type 0 +game_mode 1"
+    ports:
+      - { port: 27015, proto: tcp }
+      - { port: 27015, proto: udp }
+    probe:
+      type: udp
+      port: 27015
+      timeout_s: 90
+
+  desired_state: Running
+
+  credentials:
+    steam: ref://creds/steam-anonymous
+    registry: ref://creds/internal-registry

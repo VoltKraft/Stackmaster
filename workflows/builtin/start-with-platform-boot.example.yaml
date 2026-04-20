@@ -1,0 +1,49 @@
+# Built-in workflow template: start-with-platform-boot
+#
+# Purpose
+#   Triggered when a user requests a game server and its platform (or
+#   the hypervisor beneath it) is not yet up. Walks the stack from
+#   bottom to top and reports "ready" only after the probe succeeds.
+#
+# Status
+#   Template. Not active behavior. Clone into your own workspace and
+#   edit. See docs/WORKFLOWS.md for the schema.
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Workflow
+metadata:
+  name: start-with-platform-boot
+  description: |
+    Ensure the hypervisor is up, the platform is ready, then start the
+    game server and wait for its health check.
+  tags: [builtin, template, operator-invocable]
+
+spec:
+  version: 1
+
+  inputs:
+    server:
+      type: ref
+      kind: gameserver
+      description: Which game server to bring up.
+
+  triggers:
+    - id: manual
+      type: Manual
+
+  retry:
+    default:
+      max_attempts: 3
+      backoff: exponential
+      max_delay: 2m
+
+  nodes:
+    # TODO: Hypervisor.ensureUp
+    # TODO: Delay.waitFor(ssh)
+    # TODO: Platform.ensureReady
+    # TODO: Action.SetDesiredState(target=server, state=Running)
+    # TODO: Delay.waitFor(healthcheck)
+    # TODO: Notification (optional)
+
+  edges:
+    # TODO: wire nodes top-to-bottom

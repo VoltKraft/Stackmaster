@@ -1,0 +1,55 @@
+# Example infrastructure manifest
+#
+#   A Minecraft Java Edition server, running as a Docker container on
+#   a VM hosted by a Proxmox cluster. This is the canonical "three
+#   providers wired together" example.
+#
+# Status
+#   Draft. Schema may change before v0.1. See docs/WORKFLOWS.md and
+#   docs/PROVIDERS.md.
+#
+# Apply with:
+#   stackmaster apply -f examples/manifests/minecraft-docker-on-proxmox.yaml
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Stack
+metadata:
+  name: minecraft-saturday
+  description: Weekend Minecraft server on Proxmox + Docker.
+
+spec:
+  hypervisor:
+    provider: proxmox
+    connection: ref://hypervisors/pve-cluster-01
+    host:
+      name: pve-node-03
+      vmid: 2048
+
+  platform:
+    provider: docker
+    target: ref://platforms/gameplat-docker-01
+    depends_on_hypervisor: true
+
+  game:
+    provider: custom-image
+    image: itzg/minecraft-server:latest
+    env:
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      MEMORY: "4G"
+    ports:
+      - { port: 25565, proto: tcp }
+    volumes:
+      - { name: world, mountPath: /data }
+    probe:
+      type: tcp
+      port: 25565
+      timeout_s: 120
+
+  desired_state: Running
+
+  credentials:
+    # The Docker host may need registry creds; Proxmox needs API
+    # access. Both are referenced, never inlined.
+    docker_registry: ref://creds/dockerhub-readonly
+    proxmox_api:    ref://creds/proxmox-main

@@ -1,0 +1,127 @@
+# Example workflow: wake-on-demand
+#
+# Scenario
+#   A user clicks "Start" on a game server whose platform host (the
+#   Proxmox VM that runs Docker) is powered off. Stackmaster:
+#
+#     1. detects that the platform is unreachable,
+#     2. boots the VM via the Proxmox provider,
+#     3. waits for SSH to come up on the VM,
+#     4. confirms the Docker daemon is ready,
+#     5. sets the game server's desired state to Running,
+#     6. waits for the health probe to succeed,
+#     7. fires a "ready" notification.
+#
+# Status
+#   Illustrative draft. Schema and expression grammar may change
+#   before v0.1. See docs/WORKFLOWS.md.
+#
+# Run manually (once applied):
+#   stackmaster workflow run wake-on-demand --input server=ref://servers/valheim-saturday
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Workflow
+metadata:
+  name: wake-on-demand
+  description: |
+    Bring a stack up on demand. If the platform is unreachable, boot
+    the hypervisor host first, then start the server, then probe.
+  tags: [example, operator-invocable]
+
+spec:
+  version: 1
+
+  inputs:
+    server:
+      type: ref
+      kind: gameserver
+      description: Which game server the user wants to start.
+
+  triggers:
+    # The operator clicks "Start" on the server's tile in the UI,
+    # which the core translates into a workflow run with this input.
+    - id: on-start-request
+      type: InternalEvent
+      event: gameserver.start-requested
+
+    # Also invocable directly from the UI button "Run workflow".
+    - id: manual
+      type: Manual
+
+  retry:
+    default:
+      max_attempts: 3
+      backoff: exponential
+      max_delay: 2m
+
+  nodes:
+    # -- Phase 1: is the platform already reachable? --------------------
+    - id: check-platform
+      type: Condition
+      expression: "server.platform.reachable == true"
+
+    # -- Phase 2a: if not, boot the host via the hypervisor provider. --
+    - id: boot-host
+      type: Action
+      action: Hypervisor.ensureUp
+      params:
+        host: "${{ server.platform.hypervisor }}"
+
+    # -- Phase 2b: wait for SSH. ---------------------------------------
+    - id: wait-ssh
+      type: Delay
+      waitFor:
+        probe: ssh
+        host: "${{ server.platform.hypervisor }}"
+        timeout: 3m
+
+    # -- Phase 2c: ensure the platform runtime is ready (docker up). ---
+    - id: platform-ready
+      type: Action
+      action: Platform.ensureReady
+      params:
+        platform: "${{ server.platform }}"
+
+    # -- Phase 3: tell the reconciler we want the server running. ------
+    # We don't call Game.start directly; we write desired state and let
+    # the reconciler converge. This makes the step idempotent.
+    - id: mark-running
+      type: Action
+      action: SetDesiredState
+      params:
+        target: "${{ server }}"
+        state: Running
+
+    # -- Phase 4: wait for the health check to pass. -------------------
+    - id: wait-health
+      type: Delay
+      waitFor:
+        probe: healthcheck
+        server: "${{ server }}"
+        timeout: 3m
+
+    # -- Phase 5: announce it's ready. ---------------------------------
+    - id: notify-ready
+      type: Notification
+      channel: ref://creds/discord-webhook
+      template: |
+        Server {{ server.name }} is ready.
+        Connect: {{ server.connect_hint }}
+
+  edges:
+    # Fast path: platform already reachable → skip the boot.
+    - from: check-platform
+      to: mark-running
+      when: "result == true"
+
+    # Slow path: bring the host up, then the platform, then the server.
+    - from: check-platform
+      to: boot-host
+      when: "result == false"
+    - [ boot-host, wait-ssh ]
+    - [ wait-ssh, platform-ready ]
+    - [ platform-ready, mark-running ]
+
+    # Convergence path: wait for the probe, then notify.
+    - [ mark-running, wait-health ]
+    - [ wait-health, notify-ready ]

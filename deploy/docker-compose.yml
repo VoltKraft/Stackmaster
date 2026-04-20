@@ -1,0 +1,112 @@
+# Stackmaster — docker-compose skeleton
+#
+# Status
+#   Scaffolding only. Every service below is commented out. No image
+#   tags, no ports exposed, no credentials. The file documents the
+#   intended service topology; iteration 2 will turn it into a working
+#   deployment.
+#
+# When to touch this file
+#   After ADR-0001 (language) and ADR-0005 (credential vault) land.
+#
+# See docs/ARCHITECTURE.md §8 for the deployment model.
+
+# version:  intentionally omitted; modern compose does not require it.
+
+# services:
+
+#   # ---------------------------------------------------------------
+#   # core — REST + WebSocket API, reconciler, workflow engine, auth.
+#   # ---------------------------------------------------------------
+#   core:
+#     # TODO: pin image once published.
+#     # image: ghcr.io/stackmaster/core:<version>
+#     # build: ../core
+#     # restart: unless-stopped
+#     # environment:
+#     #   SM_DATABASE_URL: postgres://stackmaster@postgres:5432/stackmaster
+#     #   SM_REDIS_URL: redis://redis:6379/0
+#     #   SM_MASTER_KEY_SOURCE: env
+#     #   SM_MASTER_KEY: "${SM_MASTER_KEY}"   # see .env.example
+#     #   SM_OIDC_ISSUER: "${SM_OIDC_ISSUER}"
+#     #   SM_OIDC_CLIENT_ID: "${SM_OIDC_CLIENT_ID}"
+#     #   SM_OIDC_CLIENT_SECRET: "${SM_OIDC_CLIENT_SECRET}"
+#     # depends_on:
+#     #   - postgres
+#     #   - redis
+#     # ports:
+#     #   - "8080:8080"   # TODO: put behind traefik instead.
+#     # volumes:
+#     #   - ./data/core:/var/lib/stackmaster
+
+#   # ---------------------------------------------------------------
+#   # worker — task executor for provider calls.
+#   # ---------------------------------------------------------------
+#   worker:
+#     # image: ghcr.io/stackmaster/core:<version>
+#     # command: ["worker"]
+#     # restart: unless-stopped
+#     # environment:
+#     #   SM_DATABASE_URL: postgres://stackmaster@postgres:5432/stackmaster
+#     #   SM_REDIS_URL: redis://redis:6379/0
+#     #   SM_MASTER_KEY: "${SM_MASTER_KEY}"
+#     # depends_on:
+#     #   - core
+#     #   - postgres
+#     #   - redis
+
+#   # ---------------------------------------------------------------
+#   # postgres — source of truth.
+#   # ---------------------------------------------------------------
+#   postgres:
+#     # image: postgres:<pinned-version>
+#     # restart: unless-stopped
+#     # environment:
+#     #   POSTGRES_USER: stackmaster
+#     #   POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+#     #   POSTGRES_DB: stackmaster
+#     # volumes:
+#     #   - ./data/postgres:/var/lib/postgresql/data
+
+#   # ---------------------------------------------------------------
+#   # redis — cache, queues, WebSocket pub/sub, sessions.
+#   # ---------------------------------------------------------------
+#   redis:
+#     # image: redis:<pinned-version>
+#     # restart: unless-stopped
+#     # command: ["redis-server", "--appendonly", "yes"]
+#     # volumes:
+#     #   - ./data/redis:/data
+
+#   # ---------------------------------------------------------------
+#   # ui — static SPA served by a tiny web server.
+#   # ---------------------------------------------------------------
+#   ui:
+#     # image: ghcr.io/stackmaster/ui:<version>
+#     # build: ../ui
+#     # restart: unless-stopped
+#     # environment:
+#     #   SM_API_URL: http://core:8080
+#     # depends_on:
+#     #   - core
+
+#   # ---------------------------------------------------------------
+#   # traefik — optional reverse proxy with TLS termination.
+#   # ---------------------------------------------------------------
+#   traefik:
+#     # image: traefik:<pinned-version>
+#     # restart: unless-stopped
+#     # command:
+#     #   - "--providers.docker=true"
+#     #   - "--entrypoints.websecure.address=:443"
+#     #   - "--entrypoints.web.address=:80"
+#     # ports:
+#     #   - "80:80"
+#     #   - "443:443"
+#     # volumes:
+#     #   - /var/run/docker.sock:/var/run/docker.sock:ro
+#     #   - ./data/traefik:/etc/traefik
+
+# volumes:
+#   # Named volumes are avoided for v0.1 so that backups are plain
+#   # directories under ./data/. Re-evaluate for Helm.

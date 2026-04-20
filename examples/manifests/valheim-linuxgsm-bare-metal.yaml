@@ -1,0 +1,45 @@
+# Example infrastructure manifest
+#
+#   A Valheim server running via LinuxGSM on a bare-metal Linux host
+#   managed by systemd. The hypervisor is the sentinel `noop`
+#   provider because the box is always on.
+#
+# Status
+#   Draft. Schema may change before v0.1.
+#
+# Apply with:
+#   stackmaster apply -f examples/manifests/valheim-linuxgsm-bare-metal.yaml
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Stack
+metadata:
+  name: valheim-saturday
+  description: Saturday-night Valheim raid server.
+
+spec:
+  hypervisor:
+    provider: noop
+    host:
+      name: baremetal-01
+
+  platform:
+    provider: systemd-linux
+    target: ref://platforms/baremetal-01-systemd
+    ssh: ref://creds/ssh-gameplat-01
+
+  game:
+    provider: linuxgsm
+    title: vhserver
+    config:
+      worldname: "Stackmaster"
+      port: 2456
+    probe:
+      type: udp
+      port: 2456
+      timeout_s: 60
+
+  desired_state: Running
+
+  credentials:
+    ssh: ref://creds/ssh-gameplat-01
+    steam: ref://creds/steam-anonymous

@@ -1,0 +1,33 @@
+# deploy/docker-compose.override.example.yml
+#
+# Purpose
+#   Template for local overrides. Copy to
+#   `docker-compose.override.yml` and adjust for your host. The real
+#   override file is gitignored.
+#
+# Status
+#   Skeleton only. Every section is commented out.
+
+# services:
+
+#   core:
+#     # Expose the API directly to localhost for local development.
+#     # ports:
+#     #   - "127.0.0.1:8080:8080"
+#     # environment:
+#     #   SM_LOG_LEVEL: debug
+#     # volumes:
+#     #   - ../core:/workspace
+
+#   ui:
+#     # Mount the UI source for hot-reload during development.
+#     # volumes:
+#     #   - ../ui:/workspace
+
+#   postgres:
+#     # Expose PostgreSQL locally for ad-hoc SQL inspection.
+#     # ports:
+#     #   - "127.0.0.1:5432:5432"
+
+#   # traefik:
+#     # Override domain, certificate resolver, etc.

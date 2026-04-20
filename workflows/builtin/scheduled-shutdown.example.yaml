@@ -1,0 +1,50 @@
+# Built-in workflow template: scheduled-shutdown
+#
+# Purpose
+#   Cron-driven shutdown of a game server (and optionally its
+#   platform host) during off-hours. Save bandwidth, power, and
+#   cloud bills.
+#
+# Status
+#   Template. Clone and edit. See docs/WORKFLOWS.md.
+
+apiVersion: stackmaster.io/v1alpha1
+kind: Workflow
+metadata:
+  name: scheduled-shutdown
+  description: |
+    Stop the named game server on a cron schedule. Optionally shut
+    down the platform host afterwards if no other server is active.
+  tags: [builtin, template]
+
+spec:
+  version: 1
+
+  inputs:
+    server:
+      type: ref
+      kind: gameserver
+    shutdown_host_when_idle:
+      type: bool
+      default: false
+
+  triggers:
+    - id: nightly
+      type: Cron
+      schedule: "0 3 * * *"
+      timezone: "UTC"  # TODO: set per deployment
+
+  retry:
+    default:
+      max_attempts: 2
+      backoff: exponential
+
+  nodes:
+    # TODO: Action.SetDesiredState(state=Stopped)
+    # TODO: Delay.waitFor(state=Stopped)
+    # TODO: Condition: shutdown_host_when_idle AND no sibling active
+    # TODO: Action.Hypervisor.ensureDown
+    # TODO: Notification
+
+  edges:
+    # TODO: wire nodes
